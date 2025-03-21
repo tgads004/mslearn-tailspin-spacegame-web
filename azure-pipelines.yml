@@ -72,8 +72,10 @@ steps:
   displayName: 'Publish code coverage report'
   inputs:
     targetType: 'inline'
-    script: |
-      Write-Host "##vso[codecoverage.publish codecoveragetool=cobertura;summaryfile=$(Build.SourcesDirectory)/**/coverage.cobertura.xml;]"
+    script: |      
+      $coverageFile = '/home/vsts/work/1/s/Tailspin.SpaceGame.Web.Tests/TestResults/Coverage/coverage.cobertura.xml'
+      Write-Host "Reading code coverage summary from '$coverageFile'"
+      ##vso[codecoverage.publish codecoveragetool=cobertura;summaryfile=$coverageFile;]
 
 - task: DotNetCoreCLI@2
   displayName: 'Publish the project - $(buildConfiguration)'
