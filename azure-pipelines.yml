@@ -73,7 +73,7 @@ steps:
   inputs:
     targetType: 'inline'
     script: |      
-      $coverageFile = '/home/vsts/work/1/s/Tailspin.SpaceGame.Web.Tests/TestResults/Coverage/coverage.cobertura.xml'
+      $coverageFile = '$(Build.SourcesDirectory)/TestResults/Coverage/coverage.cobertura.xml'
       Write-Host "Reading code coverage summary from '$coverageFile'"
       ##vso[codecoverage.publish codecoveragetool=cobertura;summaryfile=$coverageFile;]
 
