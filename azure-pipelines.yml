@@ -79,17 +79,22 @@ steps:
 - script: ls -R $(Build.SourcesDirectory)/CodeCoverage
   displayName: 'List CodeCoverage directory contents'
 
-
-- task: PublishPipelineArtifact@1
+- task: PublishCodeCoverageResults@2
   displayName: 'Publish code coverage results'
   inputs:
-    targetPath: '$(Build.SourcesDirectory)/CodeCoverage'
-    artifact: 'CodeCoverage'
-    publishLocation: 'pipeline'
+    # codeCoverageTool: 'Cobertura'
+    summaryFileLocation: '$(Build.SourcesDirectory)/$(testDir)/TestResults/Coverage/coverage.cobertura.xml'
+    # reportDirectory: '$(Build.SourcesDirectory)/CodeCoverage'
+
+# - task: PublishPipelineArtifact@1
+#   displayName: 'Publish code coverage results'
+#   inputs:
+#     targetPath: '$(Build.SourcesDirectory)/CodeCoverage'
+#     artifact: 'CodeCoverage'
+#     publishLocation: 'pipeline'
 
 - script: ls -R $(Build.SourcesDirectory)/$(testDir)/TestResults/Coverage
   displayName: 'List Coverage Directory Contents'
-
 
 - task: PowerShell@2
   displayName: 'Publish code coverage report'
