@@ -9,6 +9,7 @@ pool:
 variables:
   buildConfiguration: 'Release'
   wwwrootDir: 'Tailspin.SpaceGame.Web/wwwroot'
+  testDir: 'Tailspin.SpaceGame.Web.Tests'
   dotnetSdkVersion: '8.x'
 
 steps:
@@ -57,7 +58,7 @@ steps:
   displayName: 'Run unit tests - $(buildConfiguration)'
   inputs:
     command: 'test'
-    arguments: '--no-build --configuration $(buildConfiguration) /p:CollectCoverage=true /p:CoverletOutputFormat=cobertura /p:CoverletOutput=$(Build.SourcesDirectory)/TestResults/Coverage/'
+    arguments: '--no-build --configuration $(buildConfiguration) /p:CollectCoverage=true /p:CoverletOutputFormat=cobertura /p:CoverletOutput=$(Build.SourcesDirectory)/$(testDir)/TestResults/Coverage/'
     publishTestResults: true
     projects: '**/*.Tests.csproj'
 
@@ -86,12 +87,16 @@ steps:
     artifact: 'CodeCoverage'
     publishLocation: 'pipeline'
 
+- script: ls -R $(Build.SourcesDirectory)/$(testDir)/TestResults/Coverage
+  displayName: 'List Coverage Directory Contents'
+
+
 - task: PowerShell@2
   displayName: 'Publish code coverage report'
   inputs:
     targetType: 'inline'
     script: |      
-      $coverageFile = '$(Build.SourcesDirectory)/TestResults/Coverage/coverage.cobertura.xml'
+      $coverageFile = '$(Build.SourcesDirectory)/$(testDir)/TestResults/Coverage/coverage.cobertura.xml'
       Write-Host "Reading code coverage summary from '$coverageFile'"
       Write-Host "##vso[codecoverage.publish codecoveragetool=cobertura;summaryfile=$coverageFile;]"
 
