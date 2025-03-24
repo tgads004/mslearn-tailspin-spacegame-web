@@ -93,7 +93,8 @@ steps:
     script: |      
       $coverageFile = '$(Build.SourcesDirectory)/TestResults/Coverage/coverage.cobertura.xml'
       Write-Host "Reading code coverage summary from '$coverageFile'"
-      vso[codecoverage.publish codecoveragetool=cobertura;summaryfile=$coverageFile;]
+      Write-Host "##vso[codecoverage.publish codecoveragetool=cobertura;summaryfile=$coverageFile;]"
+
 
 - task: DotNetCoreCLI@2
   displayName: 'Publish the project - $(buildConfiguration)'
