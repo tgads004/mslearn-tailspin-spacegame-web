@@ -78,6 +78,7 @@ steps:
 - script: ls -R $(Build.SourcesDirectory)/CodeCoverage
   displayName: 'List CodeCoverage directory contents'
 
+
 - task: PublishPipelineArtifact@1
   displayName: 'Publish code coverage results'
   inputs:
@@ -85,14 +86,14 @@ steps:
     artifact: 'CodeCoverage'
     publishLocation: 'pipeline'
 
-# - task: PowerShell@2
-#   displayName: 'Publish code coverage report'
-#   inputs:
-#     targetType: 'inline'
-#     script: |      
-#       $coverageFile = '$(Build.SourcesDirectory)/TestResults/Coverage/coverage.cobertura.xml'
-#       Write-Host "Reading code coverage summary from '$coverageFile'"
-#       ##vso[codecoverage.publish codecoveragetool=cobertura;summaryfile=$coverageFile;]
+- task: PowerShell@2
+  displayName: 'Publish code coverage report'
+  inputs:
+    targetType: 'inline'
+    script: |      
+      $coverageFile = '$(Build.SourcesDirectory)/TestResults/Coverage/coverage.cobertura.xml'
+      Write-Host "Reading code coverage summary from '$coverageFile'"
+      vso[codecoverage.publish codecoveragetool=cobertura;summaryfile=$coverageFile;]
 
 - task: DotNetCoreCLI@2
   displayName: 'Publish the project - $(buildConfiguration)'
