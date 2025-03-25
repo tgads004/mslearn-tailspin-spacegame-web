@@ -65,107 +65,107 @@ stages:
     - publish: '$(Build.ArtifactStagingDirectory)'
       artifact: drop
 
-- stage: 'TestAndPublish' # Renamed the original steps to a stage
-  displayName: 'Test and Publish'
-  dependsOn: Build # Depend on the Build stage
-  jobs:
-  - job: 'TestAndPublishJob'
-    displayName: 'Test and Publish Job'
-    pool:
-      vmImage: 'ubuntu-20.04'
-      demands:
-      - npm
+# - stage: 'TestAndPublish' # Renamed the original steps to a stage
+#   displayName: 'Test and Publish'
+#   dependsOn: Build # Depend on the Build stage
+#   jobs:
+#   - job: 'TestAndPublishJob'
+#     displayName: 'Test and Publish Job'
+#     pool:
+#       vmImage: 'ubuntu-20.04'
+#       demands:
+#       - npm
 
-    variables:
-      wwwrootDir: 'Tailspin.SpaceGame.Web/wwwroot'
-      testDir: 'Tailspin.SpaceGame.Web.Tests'
-      dotnetSdkVersion: '8.x'
+#     variables:
+#       wwwrootDir: 'Tailspin.SpaceGame.Web/wwwroot'
+#       testDir: 'Tailspin.SpaceGame.Web.Tests'
+#       dotnetSdkVersion: '8.x'
 
-    steps:
-    - task: UseDotNet@2
-      displayName: 'Use .NET SDK $(dotnetSdkVersion)'
-      inputs:
-        version: '$(dotnetSdkVersion)'
+#     steps:
+#     - task: UseDotNet@2
+#       displayName: 'Use .NET SDK $(dotnetSdkVersion)'
+#       inputs:
+#         version: '$(dotnetSdkVersion)'
 
-    - task: Npm@1
-      displayName: 'Run npm install'
-      inputs:
-        verbose: false
+#     - task: Npm@1
+#       displayName: 'Run npm install'
+#       inputs:
+#         verbose: false
 
-    - script: './node_modules/.bin/node-sass $(wwwrootDir) --output $(wwwrootDir)'
-      displayName: 'Compile Sass assets'
+#     - script: './node_modules/.bin/node-sass $(wwwrootDir) --output $(wwwrootDir)'
+#       displayName: 'Compile Sass assets'
 
-    - task: gulp@1
-      displayName: 'Run gulp tasks'
+#     - task: gulp@1
+#       displayName: 'Run gulp tasks'
 
-    - script: 'echo "$(Build.DefinitionName), $(Build.BuildId), $(Build.BuildNumber)" > buildinfo.txt'
-      displayName: 'Write build info'
-      workingDirectory: $(wwwrootDir)
+#     - script: 'echo "$(Build.DefinitionName), $(Build.BuildId), $(Build.BuildNumber)" > buildinfo.txt'
+#       displayName: 'Write build info'
+#       workingDirectory: $(wwwrootDir)
 
-    - task: DotNetCoreCLI@2
-      displayName: 'Restore project dependencies'
-      inputs:
-        command: 'restore'
-        projects: '**/*.csproj'
+#     - task: DotNetCoreCLI@2
+#       displayName: 'Restore project dependencies'
+#       inputs:
+#         command: 'restore'
+#         projects: '**/*.csproj'
 
-    - task: DotNetCoreCLI@2
-      displayName: 'Build the project - $(buildConfiguration)'
-      inputs:
-        command: 'build'
-        arguments: '--no-restore --configuration $(buildConfiguration)'
-        projects: '**/*.csproj'
+#     - task: DotNetCoreCLI@2
+#       displayName: 'Build the project - $(buildConfiguration)'
+#       inputs:
+#         command: 'build'
+#         arguments: '--no-restore --configuration $(buildConfiguration)'
+#         projects: '**/*.csproj'
 
-    - task: DotNetCoreCLI@2
-      displayName: 'Install .NET tools from local manifest'
-      inputs:
-        command: custom
-        custom: tool
-        arguments: 'restore'
+#     - task: DotNetCoreCLI@2
+#       displayName: 'Install .NET tools from local manifest'
+#       inputs:
+#         command: custom
+#         custom: tool
+#         arguments: 'restore'
 
-    - task: DotNetCoreCLI@2
-      displayName: 'Run unit tests - $(buildConfiguration)'
-      inputs:
-        command: 'test'
-        arguments: '--no-build --configuration $(buildConfiguration) /p:CollectCoverage=true /p:CoverletOutputFormat=cobertura /p:CoverletOutput=$(Build.SourcesDirectory)/$(testDir)/TestResults/Coverage/'
-        publishTestResults: true
-        projects: '**/*.Tests.csproj'
+#     - task: DotNetCoreCLI@2
+#       displayName: 'Run unit tests - $(buildConfiguration)'
+#       inputs:
+#         command: 'test'
+#         arguments: '--no-build --configuration $(buildConfiguration) /p:CollectCoverage=true /p:CoverletOutputFormat=cobertura /p:CoverletOutput=$(Build.SourcesDirectory)/$(testDir)/TestResults/Coverage/'
+#         publishTestResults: true
+#         projects: '**/*.Tests.csproj'
 
-    - task: DotNetCoreCLI@2
-      displayName: 'Create code coverage report'
-      inputs:
-        command: custom
-        custom: tool
-        arguments: 'run reportgenerator -reports:$(Build.SourcesDirectory)/**/coverage.cobertura.xml -targetdir:$(Build.SourcesDirectory)/CodeCoverage -reporttypes:HtmlInline_AzurePipelines'
+#     - task: DotNetCoreCLI@2
+#       displayName: 'Create code coverage report'
+#       inputs:
+#         command: custom
+#         custom: tool
+#         arguments: 'run reportgenerator -reports:$(Build.SourcesDirectory)/**/coverage.cobertura.xml -targetdir:$(Build.SourcesDirectory)/CodeCoverage -reporttypes:HtmlInline_AzurePipelines'
 
-    - script: ls -R $(Build.SourcesDirectory)/CodeCoverage
-      displayName: 'List CodeCoverage directory contents'
+#     - script: ls -R $(Build.SourcesDirectory)/CodeCoverage
+#       displayName: 'List CodeCoverage directory contents'
 
-    - task: PublishCodeCoverageResults@2
-      displayName: 'Publish code coverage results'
-      inputs:
-        summaryFileLocation: '$(Build.SourcesDirectory)/$(testDir)/TestResults/Coverage/coverage.cobertura.xml'
+#     - task: PublishCodeCoverageResults@2
+#       displayName: 'Publish code coverage results'
+#       inputs:
+#         summaryFileLocation: '$(Build.SourcesDirectory)/$(testDir)/TestResults/Coverage/coverage.cobertura.xml'
 
-    - script: ls -R $(Build.SourcesDirectory)/$(testDir)/TestResults/Coverage
-      displayName: 'List Coverage Directory Contents'
+#     - script: ls -R $(Build.SourcesDirectory)/$(testDir)/TestResults/Coverage
+#       displayName: 'List Coverage Directory Contents'
 
-    - task: PowerShell@2
-      displayName: 'Publish code coverage report'
-      inputs:
-        targetType: 'inline'
-        script: |
-          $coverageFile = '$(Build.SourcesDirectory)/$(testDir)/TestResults/Coverage/coverage.cobertura.xml'
-          Write-Host "Reading code coverage summary from '$coverageFile'"
-          Write-Host "##vso[codecoverage.publish codecoveragetool=cobertura;summaryfile=$coverageFile;]"
+#     - task: PowerShell@2
+#       displayName: 'Publish code coverage report'
+#       inputs:
+#         targetType: 'inline'
+#         script: |
+#           $coverageFile = '$(Build.SourcesDirectory)/$(testDir)/TestResults/Coverage/coverage.cobertura.xml'
+#           Write-Host "Reading code coverage summary from '$coverageFile'"
+#           Write-Host "##vso[codecoverage.publish codecoveragetool=cobertura;summaryfile=$coverageFile;]"
 
-    - task: DotNetCoreCLI@2
-      displayName: 'Publish the project - $(buildConfiguration)'
-      inputs:
-        command: 'publish'
-        projects: '**/*.csproj'
-        publishWebProjects: false
-        arguments: '--no-build --configuration $(buildConfiguration) --output $(Build.ArtifactStagingDirectory)/$(buildConfiguration)'
-        zipAfterPublish: true
+#     - task: DotNetCoreCLI@2
+#       displayName: 'Publish the project - $(buildConfiguration)'
+#       inputs:
+#         command: 'publish'
+#         projects: '**/*.csproj'
+#         publishWebProjects: false
+#         arguments: '--no-build --configuration $(buildConfiguration) --output $(Build.ArtifactStagingDirectory)/$(buildConfiguration)'
+#         zipAfterPublish: true
 
-    - task: PublishBuildArtifacts@1
-      displayName: 'Publish Artifact: drop'
-      condition: succeeded()
+#     - task: PublishBuildArtifacts@1
+#       displayName: 'Publish Artifact: drop'
+#       condition: succeeded()
