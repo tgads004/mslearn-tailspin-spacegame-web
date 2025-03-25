@@ -81,9 +81,22 @@ stages:
           steps:
           - download: current
             artifact: drop
-          - task: PowerShell@2
-            displayName: 'Deploy to Azure App Service'
+          - task: AzureWebApp@1
+            displayName: 'Azure App Service Deploy: website'
             inputs:
-              targetType: 'inline'
-              script: |
-                az webapp deploy --resource-group 'Tailspin-SpaceGame-RG' --name '$(WebAppName)' --src-path '$(Pipeline.Workspace)/drop/$(buildConfiguration)/*.zip'
+              azureSubscription: 'Resource Manager - Tailspin - Space Game - CRP'
+              appName: '$(WebAppName)'
+              package: '$(Pipeline.Workspace)/drop/$(buildConfiguration)/*.zip'             
+              appType: 'webAppLinux'
+              # appName: 'tailspin-space-game-web-01'
+              # deployToSlotOrASE: true
+              # resourceGroupName: 'tailspin-space-game-rg'
+              # slotName: 'production'
+              # package: '$(System.DefaultWorkingDirectory)/**/*.zip'
+              # runtimeStack: 'DOTNETCORE:8.0'
+              # - task: PowerShell@2
+              #   displayName: 'Deploy to Azure App Service'
+              #   inputs:
+              #     targetType: 'inline'
+              #     script: |
+              #       az webapp deploy --resource-group 'Tailspin-SpaceGame-RG' --name '$(WebAppName)' --src-path '$(Pipeline.Workspace)/drop/$(buildConfiguration)/*.zip'
