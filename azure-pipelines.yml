@@ -12,6 +12,8 @@ trigger:
 variables:
   buildConfiguration: 'Release'
   releaseBranchName: 'release'
+  groups:
+    - Release
 
 schedules:
 - cron: '0 3 * * *'
@@ -29,7 +31,7 @@ stages:
     releaseBranchName: $(releaseBranchName)
     vmImage: 'ubuntu-20.04'
     dotnetSdkVersion: '8.x'
-    webAppNameDev: '$(WebAppNameDev)'
-    webAppNameTest: '$(WebAppNameTest)'
-    webAppNameStaging: '$(WebAppNameStaging)'
+    webAppNameDev: $(WebAppNameDev)
+    webAppNameTest: $(WebAppNameTest)
+    webAppNameStaging: $(WebAppNameStaging)
     azureSubscription: 'Resource Manager - Tailspin - Space Game'
