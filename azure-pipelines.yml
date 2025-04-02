@@ -28,7 +28,7 @@ stages:
     buildConfiguration: $(buildConfiguration)
     releaseBranchName: $(releaseBranchName)
     vmImage: 'ubuntu-20.04'
-    dotnetSdkVersion: '6.x'
+    dotnetSdkVersion: '8.x'
     webAppNameDev: '$(WebAppNameDev)'
     webAppNameTest: '$(WebAppNameTest)'
     webAppNameStaging: '$(WebAppNameStaging)'
