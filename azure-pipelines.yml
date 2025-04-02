@@ -10,10 +10,11 @@ trigger:
 #       name: YourProject/YourTemplatesRepo
 
 variables:
-  buildConfiguration: 'Release'
-  releaseBranchName: 'release'
-  groups:
-  - Release
+- group: Release
+    #buildConfiguration: $(buildConfiguration)
+    #releaseBranchName: 'release'
+  
+
 
 schedules:
 - cron: '0 3 * * *'
@@ -27,8 +28,9 @@ stages:
 #- template: pipeline-templates/build-deploy-multienv-template.yml@templates #Use with resources
 - template: pipeline-templates/build-deploy-multienv-template.yml
   parameters:
-    buildConfiguration: $(buildConfiguration)
-    releaseBranchName: $(releaseBranchName)
+    #buildConfiguration: $(buildConfiguration)
+    releaseBranchName: 'release'
+    buildConfiguration: 'Release'
     vmImage: 'ubuntu-20.04'
     dotnetSdkVersion: '8.x'
     webAppNameDev: $(WebAppNameDev)
