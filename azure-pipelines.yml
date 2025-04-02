@@ -1,5 +1,13 @@
+# main-pipeline.yml
 trigger:
 - '*'
+
+# NOT SURE HOW TO UE THIS section
+# resources:
+#   repositories:
+#     - repository: templates
+#       type: git
+#       name: YourProject/YourTemplatesRepo
 
 variables:
   buildConfiguration: 'Release'
@@ -11,7 +19,7 @@ schedules:
   branches:
     include:
     - release
-  always: false 
+  always: 'false'
 
 stages:
 - stage: 'Build'
@@ -128,3 +136,14 @@ stages:
               appName: '$(WebAppNameTest)'
               package: '$(Pipeline.Workspace)/drop/$(buildConfiguration)/*.zip'
               appType: webAppLinux
+#- template: pipeline-templates/build-deploy-multienv-template.yml@templates #Use with resources
+- template: pipeline-templates/build-deploy-multienv-template.yml
+  parameters:
+    buildConfiguration: $(buildConfiguration)
+    releaseBranchName: $(releaseBranchName)
+    vmImage: 'ubuntu-20.04'
+    dotnetSdkVersion: '6.x'
+    webAppNameDev: '$(WebAppNameDev)'
+    webAppNameTest: '$(WebAppNameTest)'
+    webAppNameStaging: '$(WebAppNameStaging)'
+    azureSubscription: '$(AzureSubscription)'

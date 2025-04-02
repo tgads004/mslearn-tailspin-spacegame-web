@@ -1,0 +1,185 @@
+# Azure DevOps Pipeline Template
+# Description: Build and deploy a web application through multiple environments
+# Usage: Include this template in your main pipeline YAML and provide required parameters
+
+parameters:
+  - name: buildConfiguration
+    displayName: 'Build Configuration'
+    type: string
+    default: 'Release'
+    
+  - name: releaseBranchName
+    displayName: 'Release Branch Name'
+    type: string
+    default: 'release'
+    
+  - name: vmImage
+    displayName: 'VM Image'
+    type: string
+    default: 'ubuntu-20.04'
+    
+  - name: dotnetSdkVersion
+    displayName: '.NET SDK Version'
+    type: string
+    default: '8.x'
+    
+  - name: cronSchedule
+    displayName: 'Cron Schedule'
+    type: string
+    default: '0 3 * * *'
+    
+  - name: webAppNameDev
+    displayName: 'Dev Web App Name'
+    type: string
+    
+  - name: webAppNameTest
+    displayName: 'Test Web App Name'
+    type: string
+    
+  - name: webAppNameStaging
+    displayName: 'Staging Web App Name'
+    type: string
+    
+  - name: azureSubscription
+    displayName: 'Azure Subscription'
+    type: string
+
+stages:
+- stage: 'Build'
+  displayName: 'Build the web application'
+  jobs: 
+  - job: 'Build'
+    displayName: 'Build job'
+    pool:
+      vmImage: ${{ parameters.vmImage }}
+      demands:
+      - npm
+
+    variables:
+      wwwrootDir: 'Tailspin.SpaceGame.Web/wwwroot'
+      dotnetSdkVersion: ${{ parameters.dotnetSdkVersion }}
+
+    steps:
+    - task: UseDotNet@2
+      displayName: 'Use .NET SDK $(dotnetSdkVersion)'
+      inputs:
+        version: '$(dotnetSdkVersion)'
+
+    - task: Npm@1
+      displayName: 'Run npm install'
+      inputs:
+        verbose: false
+
+    - script: './node_modules/.bin/node-sass $(wwwrootDir) --output $(wwwrootDir)'
+      displayName: 'Compile Sass assets'
+
+    - task: gulp@1
+      displayName: 'Run gulp tasks'
+
+    - script: 'echo "$(Build.DefinitionName), $(Build.BuildId), $(Build.BuildNumber)" > buildinfo.txt'
+      displayName: 'Write build info'
+      workingDirectory: $(wwwrootDir)
+
+    - task: DotNetCoreCLI@2
+      displayName: 'Restore project dependencies'
+      inputs:
+        command: 'restore'
+        projects: '**/*.csproj'
+
+    - task: DotNetCoreCLI@2
+      displayName: 'Build the project - ${{ parameters.buildConfiguration }}'
+      inputs:
+        command: 'build'
+        arguments: '--no-restore --configuration ${{ parameters.buildConfiguration }}'
+        projects: '**/*.csproj'
+
+    - task: DotNetCoreCLI@2
+      displayName: 'Publish the project - ${{ parameters.buildConfiguration }}'
+      inputs:
+        command: 'publish'
+        projects: '**/*.csproj'
+        publishWebProjects: false
+        arguments: '--no-build --configuration ${{ parameters.buildConfiguration }} --output $(Build.ArtifactStagingDirectory)/${{ parameters.buildConfiguration }}'
+        zipAfterPublish: true
+
+    - publish: '$(Build.ArtifactStagingDirectory)'
+      artifact: drop
+
+- stage: 'Dev'
+  displayName: 'Deploy to the dev environment'
+  dependsOn: Build
+  condition: |
+    and
+    (
+      succeeded(),
+      eq(variables['Build.SourceBranchName'], '${{ parameters.releaseBranchName }}')
+    )
+  jobs:
+  - deployment: Deploy
+    pool:
+      vmImage: ${{ parameters.vmImage }}
+    environment: dev
+    variables:
+    - group: Release
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - download: current
+            artifact: drop
+          - task: AzureWebApp@1
+            displayName: 'Azure App Service Deploy: website'
+            inputs:
+              azureSubscription: ${{ parameters.azureSubscription }}
+              appName: ${{ parameters.webAppNameDev }}
+              package: '$(Pipeline.Workspace)/drop/${{ parameters.buildConfiguration }}/*.zip'
+              appType: webAppLinux
+
+- stage: 'Test'
+  displayName: 'Deploy to the test environment'
+  dependsOn: Dev
+  #condition: eq(variables['Build.Reason'], 'Schedule')
+  jobs:
+  - deployment: Deploy
+    pool:
+      vmImage: ${{ parameters.vmImage }}
+    environment: test
+    variables:
+    - group: 'Release'
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - download: current
+            artifact: drop
+          - task: AzureWebApp@1
+            displayName: 'Azure App Service Deploy: website'
+            inputs:
+              azureSubscription: ${{ parameters.azureSubscription }}
+              appName: ${{ parameters.webAppNameTest }}
+              package: '$(Pipeline.Workspace)/drop/${{ parameters.buildConfiguration }}/*.zip'
+              appType: webAppLinux
+
+- stage: 'Staging'
+  displayName: 'Deploy to the staging environment'
+  dependsOn: Test
+  jobs:
+  - deployment: Deploy
+    pool:
+      vmImage: ${{ parameters.vmImage }}
+    environment: staging
+    variables:
+    - group: 'Release'
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - download: current
+            artifact: drop
+          - task: AzureWebApp@1
+            displayName: 'Azure App Service Deploy: website'
+            inputs:
+              azureSubscription: ${{ parameters.azureSubscription }}
+              appName: ${{ parameters.webAppNameStaging }}
+              package: '$(Pipeline.Workspace)/drop/${{ parameters.buildConfiguration }}/*.zip'
+              appType: webAppLinux
