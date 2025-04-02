@@ -12,7 +12,8 @@ trigger:
 variables:
   buildConfiguration: 'Release'
   releaseBranchName: 'release'
-  groups: Release
+  groups:
+  - Release
 
 schedules:
 - cron: '0 3 * * *'
