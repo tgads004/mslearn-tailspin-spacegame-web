@@ -36,4 +36,4 @@ stages:
     webAppNameDev: $(WebAppNameDev)
     webAppNameTest: $(WebAppNameTest)
     webAppNameStaging: $(WebAppNameStaging)
-    azureSubscription: 'Resource Manager - Tailspin - Space Game'
+    azureSubscription: $(AzureSubscription) #'Resource Manager - Tailspin - Space Game'
