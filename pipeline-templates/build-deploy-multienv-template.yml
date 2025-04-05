@@ -56,6 +56,7 @@ stages:
       - npm
 
     variables:
+      testDir: 'Tailspin.SpaceGame.Web.Tests'
       wwwrootDir: 'Tailspin.SpaceGame.Web/wwwroot'
       dotnetSdkVersion: ${{ parameters.dotnetSdkVersion }}
 
@@ -92,15 +93,69 @@ stages:
         command: 'build'
         arguments: '--no-restore --configuration ${{ parameters.buildConfiguration }}'
         projects: '**/*.csproj'
+    
+    - task: DotNetCoreCLI@2
+      displayName: 'Run unit tests - ${{ parameters.buildConfiguration }}'
+      inputs:
+        command: 'test'
+        arguments: |
+          --configuration ${{ parameters.buildConfiguration }} 
+          --collect:"XPlat Code Coverage"
+          --logger trx
+          --results-directory $(Build.SourcesDirectory)/TestResults
+          /p:CollectCoverage=true 
+          /p:CoverletOutputFormat=cobertura 
+          /p:CoverletOutput=$(Build.SourcesDirectory)/TestResults/Coverage/
+          /p:Exclude="[xunit.*]*%2c[*.Tests]*"
+        publishTestResults: true
+        projects: '**/*.Tests.csproj'
+
+    - task: PublishCodeCoverageResults@2
+      displayName: 'Publish Code Coverage Results'
+      inputs:
+        codeCoverageTool: 'Cobertura'
+        summaryFileLocation: '$(Build.SourcesDirectory)/TestResults/Coverage/coverage.cobertura.xml'
+
+    - script: ls -R $(Build.SourcesDirectory)/$(testDir)/TestResults/Coverage
+      displayName: 'List Coverage Directory Contents'
+    
+    - task: PowerShell@2
+      displayName: 'Publish code coverage report'
+      inputs:
+        targetType: 'inline'
+        script: |
+          # Define coverage file path - now using standardized location
+          $coverageFile = '$(Build.SourcesDirectory)/TestResults/Coverage/coverage.cobertura.xml'
+          
+          # Verify file exists before attempting to publish
+          if (Test-Path $coverageFile) {
+              Write-Host "##[section]Found coverage file at: $coverageFile"
+              Write-Host "File size: $((Get-Item $coverageFile).Length) bytes"
+              
+              # Publish to Azure DevOps
+              Write-Host "##vso[codecoverage.publish codecoveragetool=cobertura;summaryfile=$coverageFile;]"
+          }
+          else {
+              Write-Host "##[error]Coverage file not found at: $coverageFile"
+              Write-Host "##vso[task.logissue type=error]Missing coverage file"
+              # Fail the task if file is missing
+              exit 1
+          }
 
     - task: DotNetCoreCLI@2
       displayName: 'Publish the project - ${{ parameters.buildConfiguration }}'
       inputs:
         command: 'publish'
-        projects: '**/*.csproj'
+        #projects: '**/*.csproj'
+        projects: '**/Tailspin.SpaceGame.Web.csproj'
         publishWebProjects: false
-        arguments: '--no-build --configuration ${{ parameters.buildConfiguration }} --output $(Build.ArtifactStagingDirectory)/${{ parameters.buildConfiguration }}'
+        arguments: |
+          --configuration ${{ parameters.buildConfiguration }} 
+          --output $(Build.ArtifactStagingDirectory)/app
+          --no-restore
+          /p:Version=$(Build.BuildNumber)
         zipAfterPublish: true
+        modifyOutputPath: false
 
     - publish: '$(Build.ArtifactStagingDirectory)'
       artifact: drop
