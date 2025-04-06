@@ -152,9 +152,7 @@ stages:
       inputs:
         command: 'publish'
         #projects: '**/*.csproj'
-        projects: | 
-          '**/Tailspin.SpaceGame.Web.csproj'
-          '**/Tailspin.SpaceGame.Web.Tests.csproj'
+        projects: '**/*.csproj'
         publishWebProjects: false
         arguments: |
           --configuration ${{ parameters.buildConfiguration }} 
