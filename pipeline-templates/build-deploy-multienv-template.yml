@@ -102,7 +102,7 @@ stages:
         projects: '**/Tailspin.SpaceGame.Web.Tests.csproj'
         arguments: >
           --configuration ${{ parameters.buildConfiguration }}          
-          --logger trx
+          --logger "trx;LogFileName=testresults.trx"
           --results-directory $(Build.SourcesDirectory)/TestResults
           --collect "XPlat Code Coverage"
           /p:CollectCoverage=true
@@ -110,6 +110,7 @@ stages:
           /p:CoverletOutput=$(Build.SourcesDirectory)/TestResults/Coverage/
           /p:Exclude="[xunit.*]*%2c[*.Tests]*"
         publishTestResults: true
+        workingDirectory: $(Build.SourcesDirectory)
         
 
     - task: PublishCodeCoverageResults@2
