@@ -106,22 +106,31 @@ stages:
         workingDirectory: $(Build.SourcesDirectory)
         
 
-    - task: PublishCodeCoverageResults@2
-      displayName: 'Publish Code Coverage Results'
+    - task: DotNetCoreCLI@2
+      displayName: 'Create code coverage report'
       inputs:
-        codeCoverageTool: 'Cobertura'
-        summaryFileLocation: '$(Build.SourcesDirectory)/TestResults/Coverage/coverage.cobertura.xml'
+        command: custom
+        custom: tool
+        arguments: 'run reportgenerator -reports:$(Build.SourcesDirectory)/**/coverage.cobertura.xml -targetdir:$(Build.SourcesDirectory)/CodeCoverage -reporttypes:HtmlInline_AzurePipelines'
+
+    - script: ls -R $(Build.SourcesDirectory)/CodeCoverage
+      displayName: 'List CodeCoverage directory contents'
+
+    - task: PublishCodeCoverageResults@2
+      displayName: 'Publish code coverage results'
+      inputs:       
+        summaryFileLocation: '$(Build.SourcesDirectory)/$(testDir)/TestResults/Coverage/coverage.cobertura.xml'
 
     - script: ls -R $(Build.SourcesDirectory)/$(testDir)/TestResults/Coverage
       displayName: 'List Coverage Directory Contents'
-    
+        
     - task: PowerShell@2
       displayName: 'Publish code coverage report'
       inputs:
         targetType: 'inline'
         script: |
           # Define coverage file path - now using standardized location
-          $coverageFile = '$(Build.SourcesDirectory)/TestResults/Coverage/coverage.cobertura.xml'
+          $coverageFile = '$(Build.SourcesDirectory)/$(testDir)/TestResults/Coverage/coverage.cobertura.xml'
           
           # Verify file exists before attempting to publish
           if (Test-Path $coverageFile) {
