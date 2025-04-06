@@ -103,7 +103,7 @@ stages:
         #arguments: '--configuration Release --logger trx --results-directory $(Build.SourcesDirectory)/TestResults --collect:"XPlat Code Coverage" /p:CollectCoverage=true /p:CoverletOutputFormat=cobertura /p:CoverletOutput=$(Build.SourcesDirectory)/TestResults/Coverage/ /p:Exclude="[xunit.*]*%2c[*.Tests]*"'
         arguments: '--configuration $(buildConfiguration) /p:CollectCoverage=true /p:CoverletOutputFormat=cobertura /p:CoverletOutput=$(Build.SourcesDirectory)/$(testDir)/TestResults/Coverage/'
         publishTestResults: true
-        workingDirectory: $(Build.SourcesDirectory)
+        #workingDirectory: $(Build.SourcesDirectory)
         
 
     - task: DotNetCoreCLI@2
@@ -152,7 +152,9 @@ stages:
       inputs:
         command: 'publish'
         #projects: '**/*.csproj'
-        projects: '**/Tailspin.SpaceGame.Web.csproj'
+        projects: | 
+          '**/Tailspin.SpaceGame.Web.csproj'
+          '**/Tailspin.SpaceGame.Web.Tests.csproj'
         publishWebProjects: false
         arguments: |
           --configuration ${{ parameters.buildConfiguration }} 
