@@ -104,7 +104,13 @@ stages:
         arguments: '--configuration $(buildConfiguration) /p:CollectCoverage=true /p:CoverletOutputFormat=cobertura /p:CoverletOutput=$(Build.SourcesDirectory)/$(testDir)/TestResults/Coverage/'
         publishTestResults: true
         #workingDirectory: $(Build.SourcesDirectory)
-        
+    
+    - task: DotNetCoreCLI@2
+      displayName: 'Install ReportGenerator'
+      inputs:
+        command: custom
+        custom: tool
+        arguments: install --global dotnet-reportgenerator-globaltool --version 5.1.20
 
     - task: DotNetCoreCLI@2
       displayName: 'Create code coverage report'
