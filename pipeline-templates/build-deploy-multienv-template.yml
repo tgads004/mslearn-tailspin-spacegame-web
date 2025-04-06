@@ -98,17 +98,19 @@ stages:
       displayName: 'Run unit tests - ${{ parameters.buildConfiguration }}'
       inputs:
         command: 'test'
+        #projects: '**/*.Tests.csproj'
+        projects: '**/Tailspin.SpaceGame.Web.Tests.csproj'
         arguments: |
-          --configuration ${{ parameters.buildConfiguration }} 
-          --collect:"XPlat Code Coverage"
+          --configuration ${{ parameters.buildConfiguration }}          
           --logger trx
           --results-directory $(Build.SourcesDirectory)/TestResults
+          --collect:"XPlat Code Coverage"
           /p:CollectCoverage=true 
           /p:CoverletOutputFormat=cobertura 
           /p:CoverletOutput=$(Build.SourcesDirectory)/TestResults/Coverage/
           /p:Exclude="[xunit.*]*%2c[*.Tests]*"
         publishTestResults: true
-        projects: '**/*.Tests.csproj'
+        
 
     - task: PublishCodeCoverageResults@2
       displayName: 'Publish Code Coverage Results'
