@@ -154,9 +154,9 @@ stages:
         #projects: '**/*.csproj'
         projects: '**/*.csproj'
         publishWebProjects: false
-        arguments: |
+        arguments: >
           --configuration ${{ parameters.buildConfiguration }} 
-          --output $(Build.ArtifactStagingDirectory)/app
+          --output $(Build.ArtifactStagingDirectory)
           --no-restore
           /p:Version=$(Build.BuildNumber)
         zipAfterPublish: true
