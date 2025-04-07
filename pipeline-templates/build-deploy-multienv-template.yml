@@ -160,20 +160,52 @@ stages:
               exit 1
           }
 
+    # - task: DotNetCoreCLI@2
+    #   displayName: 'Publish the project - ${{ parameters.buildConfiguration }}'
+    #   inputs:
+    #     command: 'publish'
+    #     #projects: '**/*.csproj'
+    #     projects: '**/*.csproj'
+    #     publishWebProjects: false
+    #     arguments: >
+    #       --configuration ${{ parameters.buildConfiguration }} 
+    #       --output $(Build.ArtifactStagingDirectory)
+    #       --no-restore
+    #       /p:Version=1.0.$(Build.BuildId)
+    #     zipAfterPublish: true
+    #     modifyOutputPath: false
+
+  
+    # Publish the Web Project
     - task: DotNetCoreCLI@2
-      displayName: 'Publish the project - ${{ parameters.buildConfiguration }}'
+      displayName: 'Publish Web Project'
       inputs:
         command: 'publish'
-        #projects: '**/*.csproj'
-        projects: '**/*.csproj'
-        publishWebProjects: false
-        arguments: >
-          --configuration ${{ parameters.buildConfiguration }} 
-          --output $(Build.ArtifactStagingDirectory)
-          --no-restore
-          /p:Version=1.0.$(Build.BuildId)
+        projects: '**/Tailspin.SpaceGame.Web.csproj'
+        arguments: '--configuration Release --output $(Build.ArtifactStagingDirectory)/webapp'
+        zipAfterPublish: true  
+
+    # Publish the Test Project (optional, if you want test binaries)
+    - task: DotNetCoreCLI@2
+      displayName: 'Publish Test Project'
+      inputs:
+        command: 'publish'
+        projects: '**/Tailspin.SpaceGame.Web.Tests.csproj'
+        arguments: '--configuration Release --output $(Build.ArtifactStagingDirectory)/tests'
         zipAfterPublish: true
-        modifyOutputPath: false
+
+    # Publish both folders as separate artifacts
+    - task: PublishBuildArtifacts@1
+      displayName: 'Publish WebApp Artifact'
+      inputs:
+        PathtoPublish: '$(Build.ArtifactStagingDirectory)/webapp'
+        ArtifactName: 'webapp'
+
+    - task: PublishBuildArtifacts@1
+      displayName: 'Publish Tests Artifact'
+      inputs:
+        PathtoPublish: '$(Build.ArtifactStagingDirectory)/tests'
+        ArtifactName: 'tests'
 
     - publish: '$(Build.ArtifactStagingDirectory)'
       artifact: drop
