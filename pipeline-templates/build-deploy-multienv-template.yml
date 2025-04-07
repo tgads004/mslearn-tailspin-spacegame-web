@@ -171,7 +171,7 @@ stages:
           --configuration ${{ parameters.buildConfiguration }} 
           --output $(Build.ArtifactStagingDirectory)
           --no-restore
-          /p:Version=1.0.$(Build.BuildNumber)
+          /p:Version=1.0.$(Build.BuildId)
         zipAfterPublish: true
         modifyOutputPath: false
 
