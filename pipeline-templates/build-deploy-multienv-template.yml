@@ -175,6 +175,9 @@ stages:
     #     zipAfterPublish: true
     #     modifyOutputPath: false
 
+    # Clean staging directory first (important!)
+    - script: rm -rf $(Build.ArtifactStagingDirectory)/*
+      displayName: 'Clean Artifact Staging Directory'
   
     # Publish the Web Project
     - task: DotNetCoreCLI@2
@@ -193,19 +196,6 @@ stages:
         projects: '**/Tailspin.SpaceGame.Web.Tests.csproj'
         arguments: '--configuration Release --output $(Build.ArtifactStagingDirectory)/tests'
         zipAfterPublish: true
-
-    # Publish both folders as separate artifacts
-    - task: PublishBuildArtifacts@1
-      displayName: 'Publish WebApp Artifact'
-      inputs:
-        PathtoPublish: '$(Build.ArtifactStagingDirectory)/webapp'
-        ArtifactName: 'webapp'
-
-    - task: PublishBuildArtifacts@1
-      displayName: 'Publish Tests Artifact'
-      inputs:
-        PathtoPublish: '$(Build.ArtifactStagingDirectory)/tests'
-        ArtifactName: 'tests'
 
     - publish: '$(Build.ArtifactStagingDirectory)'
       artifact: drop
