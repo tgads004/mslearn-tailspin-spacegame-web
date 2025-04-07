@@ -93,6 +93,13 @@ stages:
         command: 'build'
         arguments: '--no-restore --configuration ${{ parameters.buildConfiguration }}'
         projects: '**/*.csproj'
+
+    - task: DotNetCoreCLI@2
+      displayName: 'Install .NET tools from local manifest'
+      inputs:
+        command: custom
+        custom: tool
+        arguments: 'restore'
     
     - task: DotNetCoreCLI@2
       displayName: 'Run unit tests - ${{ parameters.buildConfiguration }}'
